@@ -1,4 +1,5 @@
 {
+    "id": "botble/my-style",
     "name": "MyStyle",
     "namespace": "Botble\\MyStyle\\",
     "provider": "Botble\\MyStyle\\Providers\\MyStyleServiceProvider",
