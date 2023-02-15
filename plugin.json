@@ -4,6 +4,6 @@
     "provider": "Botble\\MyStyle\\Providers\\MyStyleServiceProvider",
     "author": "Bao Boi",
     "url": "https://github.com/baoboine/botble-my-style",
-    "version": "1.0",
+    "version": "1.0.1",
     "description": "Custom your article styles"
 }
