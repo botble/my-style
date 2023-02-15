@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/baoboine/botble-my-style/blob/main/screenshot.png" />
+  <img src="https://github.com/botble/my-style/blob/main/screenshot.png" />
 </p>
 
 # Botble My Style
