@@ -2,9 +2,8 @@
 
 namespace Botble\MyStyle\Providers;
 
-use Botble\Base\Supports\Helper;
 use Botble\Base\Traits\LoadAndPublishDataTrait;
-use Botble\MyStyle\Facades\MyStyleHelperFacade;
+use Botble\MyStyle\Facades\MyStyleHelper;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,15 +11,15 @@ class MyStyleServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
-        Helper::autoload(__DIR__ . '/../../helpers');
-        AliasLoader::getInstance()->alias('MyStyleHelper', MyStyleHelperFacade::class);
+        AliasLoader::getInstance()->alias('MyStyleHelper', MyStyleHelper::class);
     }
 
-    public function boot()
+    public function boot(): void
     {
-        $this->setNamespace('plugins/my-style')
+        $this
+            ->setNamespace('plugins/my-style')
             ->loadAndPublishConfigurations(['permissions', 'config'])
             ->loadAndPublishViews();
 

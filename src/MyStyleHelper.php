@@ -6,27 +6,16 @@ use Illuminate\Support\Arr;
 
 class MyStyleHelper
 {
+    private array $options;
 
-    /**
-     * array
-     */
-    private $options;
-
-    /**
-     * MyStyleHelper constructor.
-     */
     public function __construct()
     {
         $this->options = config('plugins.my-style.config', []);
     }
 
-    /**
-     * @param string | array $model
-     * @return $this
-     */
     public function registerModule($model): self
     {
-        if (!is_array($model)) {
+        if (! is_array($model)) {
             $model = [$model];
         }
 
@@ -39,27 +28,16 @@ class MyStyleHelper
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function supportedModels(): array
     {
         return config('plugins.my-style.config.supported', []);
     }
 
-    /**
-     * @param string $model
-     * @return bool
-     */
     public function isSupportedModel(string $model): bool
     {
         return in_array($model, $this->supportedModels());
     }
 
-    /**
-     * @param string $model
-     * @return $this
-     */
     public function unregisterModule(string $model): self
     {
         $supported = $this->supportedModels();
@@ -75,10 +53,6 @@ class MyStyleHelper
         return $this;
     }
 
-    /**
-     * @param array $config
-     * @return $this
-     */
     public function setConfig(array $config): self
     {
         $options = array_merge($this->options, $config);
@@ -90,11 +64,6 @@ class MyStyleHelper
         return $this;
     }
 
-    /**
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
-     */
     public function config(?string $key = null, $default = null)
     {
         $options = $this->options;

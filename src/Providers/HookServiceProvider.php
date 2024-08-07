@@ -2,20 +2,19 @@
 
 namespace Botble\MyStyle\Providers;
 
-use Assets;
-use BaseHelper;
+use Botble\Base\Facades\BaseHelper;
+use Botble\Base\Facades\MetaBox;
 use Botble\Base\Models\BaseModel;
-use File;
+use Botble\MyStyle\Facades\MyStyleHelper;
+use Botble\Theme\Facades\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
-use MetaBox;
-use MyStyleHelper;
-use Theme;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_action(BASE_ACTION_META_BOXES, [$this, 'addMyStyleField'], 50, 2);
         add_action(BASE_ACTION_AFTER_CREATE_CONTENT, [$this, 'saveFieldsInFormScreen'], 75, 3);
@@ -26,15 +25,12 @@ class HookServiceProvider extends ServiceProvider
         add_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, [$this, 'embedMyStyles'], 1001, 2);
     }
 
-    /**
-     * @param $screen
-     * @param Request $request
-     * @param BaseModel $object
-     */
-    public function deleteFields($screen, $request, $object)
+    public function deleteFields(string $screen, Request $request, BaseModel $object): void
     {
-        if (MyStyleHelper::isSupportedModel(get_class($object)) &&
-            Auth::user()->hasPermission('my-style.root')) {
+        if (
+            MyStyleHelper::isSupportedModel(get_class($object))
+            && Auth::user()->hasPermission('my-style.root')
+        ) {
             $fileName = $this->fileName($object);
             $file = $this->file($fileName);
 
@@ -44,14 +40,12 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param $context
-     * @param $object
-     */
-    public function addMyStyleField($context, $object)
+    public function addMyStyleField(string $context, BaseModel $object): void
     {
-        if (MyStyleHelper::isSupportedModel(get_class($object)) &&
-            Auth::user()->hasPermission('my-style.root')) {
+        if (
+            MyStyleHelper::isSupportedModel(get_class($object))
+            && Auth::user()->hasPermission('my-style.root')
+        ) {
             MetaBox::addMetaBox(
                 'my_style',
                 __('My CSS'),
@@ -63,11 +57,7 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param BaseModel $object
-     * @return string
-     */
-    public function renderCustomCssField($object): string
+    public function renderCustomCssField(BaseModel $object): string
     {
         $fileName = $this->fileName($object);
         $path = $this->file();
@@ -75,20 +65,6 @@ class HookServiceProvider extends ServiceProvider
         $css = '';
 
         if ($isWriteable) {
-            Assets::addStylesDirectly([
-                'vendor/core/core/base/libraries/codemirror/lib/codemirror.css',
-                'vendor/core/core/base/libraries/codemirror/addon/hint/show-hint.css',
-                'vendor/core/packages/theme/css/custom-css.css',
-            ])
-                ->addScriptsDirectly([
-                    'vendor/core/core/base/libraries/codemirror/lib/codemirror.js',
-                    'vendor/core/core/base/libraries/codemirror/lib/css.js',
-                    'vendor/core/core/base/libraries/codemirror/addon/hint/show-hint.js',
-                    'vendor/core/core/base/libraries/codemirror/addon/hint/anyword-hint.js',
-                    'vendor/core/core/base/libraries/codemirror/addon/hint/css-hint.js',
-                    'vendor/core/packages/theme/js/custom-css.js',
-                ]);
-
             if ($fileName) {
                 $file = $this->file($fileName);
 
@@ -101,17 +77,12 @@ class HookServiceProvider extends ServiceProvider
         return view('plugins/my-style::css-editor', compact('css', 'isWriteable', 'path'))->render();
     }
 
-    /**
-     * @param $type
-     * @param Request $request
-     * @param $object
-     */
-    public function saveFieldsInFormScreen($type, Request $request, $object)
+    public function saveFieldsInFormScreen(string $type, Request $request, BaseModel $object): void
     {
         if (
-            MyStyleHelper::isSupportedModel(get_class($object)) &&
-            Auth::user()->hasPermission('my-style.root') &&
-            $request->has('has-my-style')
+            MyStyleHelper::isSupportedModel($object::class)
+            && Auth::user()->hasPermission('my-style.root')
+            && $request->has('has-my-style')
         ) {
             $fileName = $this->fileName($object);
             $css = strip_tags($request->input('my_custom_css', ''));
@@ -125,11 +96,7 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param string $screen
-     * @param $object
-     */
-    public function embedMyStyles($screen, $object)
+    public function embedMyStyles(string $screen, BaseModel $object): void
     {
         if (MyStyleHelper::isSupportedModel(get_class($object))) {
             $fileName = $this->fileName($object);
@@ -139,26 +106,18 @@ class HookServiceProvider extends ServiceProvider
                 Theme::asset()
                     ->container('after_header')
                     ->usePath()
-                    ->add($fileName . '-my-style', 'css/' . $fileName . '.css', [], [], filectime($file));
+                    ->add($fileName . '-my-style', 'css/' . $fileName . '.css', [], [], (string) filectime($file));
             }
         }
     }
 
-    /**
-     * @param string $slug
-     * @return string
-     */
     protected function file(string $slug = ''): string
     {
         $path = Theme::path() . '/css';
 
-        return !empty($slug) ? public_path($path . '/' . $slug . '.css') : $path;
+        return ! empty($slug) ? public_path($path . '/' . $slug . '.css') : $path;
     }
 
-    /**
-     * @param BaseModel $object
-     * @return string
-     */
     protected function fileName(BaseModel $object): string
     {
         return md5(get_class($object) . '-' . $object->id);
