@@ -5,7 +5,7 @@
     "provider": "Botble\\MyStyle\\Providers\\MyStyleServiceProvider",
     "author": "Bao Boi",
     "url": "https://github.com/baoboine/botble-my-style",
-    "version": "1.1.0",
-    "description": "Custom your article styles",
+    "version": "1.2.0",
+    "description": "Add custom CSS/JS to your site easily (support page and post).",
     "minimum_core_version": "7.1.0"
 }

@@ -43,12 +43,12 @@ class HookServiceProvider extends ServiceProvider
     public function addMyStyleField(string $context, BaseModel $object): void
     {
         if (
-            MyStyleHelper::isSupportedModel(get_class($object))
+            MyStyleHelper::isSupportedModel($object::class)
             && Auth::user()->hasPermission('my-style.root')
         ) {
             MetaBox::addMetaBox(
                 'my_style',
-                __('My CSS'),
+                __('My Style'),
                 [$this, 'renderCustomCssField'],
                 get_class($object),
                 'advanced',
@@ -61,20 +61,33 @@ class HookServiceProvider extends ServiceProvider
     {
         $fileName = $this->fileName($object);
         $path = $this->file();
+
         $isWriteable = File::isWritable($path);
+
         $css = '';
+        $js = '';
 
-        if ($isWriteable) {
-            if ($fileName) {
-                $file = $this->file($fileName);
+        if ($isWriteable && $fileName) {
+            $file = $this->file($fileName);
 
-                if (File::exists($file)) {
-                    $css = BaseHelper::getFileData($file, false);
-                }
+            if (File::exists($file)) {
+                $css = BaseHelper::getFileData($file, false);
             }
         }
 
-        return view('plugins/my-style::css-editor', compact('css', 'isWriteable', 'path'))->render();
+        $path = $this->file('', 'js');
+
+        $isWriteable = File::isWritable($path);
+
+        if ($isWriteable && $fileName) {
+            $file = $this->file($fileName);
+
+            if (File::exists($file)) {
+                $js = BaseHelper::getFileData($file, false);
+            }
+        }
+
+        return view('plugins/my-style::editor', compact('css', 'js', 'isWriteable', 'path'))->render();
     }
 
     public function saveFieldsInFormScreen(string $type, Request $request, BaseModel $object): void
@@ -93,6 +106,15 @@ class HookServiceProvider extends ServiceProvider
             } else {
                 BaseHelper::saveFileData($file, $css, false);
             }
+
+            $js = strip_tags($request->input('my_custom_js', ''));
+            $file = $this->file($fileName, 'js');
+
+            if (empty($js)) {
+                File::delete($file);
+            } else {
+                BaseHelper::saveFileData($file, $js, false);
+            }
         }
     }
 
@@ -100,26 +122,35 @@ class HookServiceProvider extends ServiceProvider
     {
         if (MyStyleHelper::isSupportedModel(get_class($object))) {
             $fileName = $this->fileName($object);
-            $file = $this->file($fileName);
+            $css = $this->file($fileName);
 
-            if (File::exists($file)) {
+            if (File::exists($css)) {
                 Theme::asset()
                     ->container('after_header')
                     ->usePath()
-                    ->add($fileName . '-my-style', 'css/' . $fileName . '.css', [], [], (string) filectime($file));
+                    ->add($fileName . '-my-style-css', 'css/' . $fileName . '.css', [], [], (string) filectime($css));
+            }
+
+            $js = $this->file($fileName, 'js');
+
+            if (File::exists($js)) {
+                Theme::asset()
+                    ->container('footer')
+                    ->usePath()
+                    ->add($fileName . '-my-style-js', 'js/' . $fileName . '.js', [], [], (string) filectime($js));
             }
         }
     }
 
-    protected function file(string $slug = ''): string
+    protected function file(string $slug = '', $type = 'css'): string
     {
-        $path = Theme::path() . '/css';
+        $path = Theme::path() . '/' . $type;
 
-        return ! empty($slug) ? public_path($path . '/' . $slug . '.css') : $path;
+        return ! empty($slug) ? public_path($path . '/' . $slug . '.' . $type) : $path;
     }
 
     protected function fileName(BaseModel $object): string
     {
-        return md5(get_class($object) . '-' . $object->id);
+        return md5($object::class . '-' . $object->getKey());
     }
 }
