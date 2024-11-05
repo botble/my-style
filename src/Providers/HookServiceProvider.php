@@ -4,7 +4,7 @@ namespace Botble\MyStyle\Providers;
 
 use Botble\Base\Facades\BaseHelper;
 use Botble\Base\Facades\MetaBox;
-use Botble\Base\Models\BaseModel;
+use Botble\Base\Contracts\BaseModel;
 use Botble\MyStyle\Facades\MyStyleHelper;
 use Botble\Theme\Facades\Theme;
 use Illuminate\Http\Request;
